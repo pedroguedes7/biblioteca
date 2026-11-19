@@ -67,7 +67,7 @@ class LivroController extends AbstractController
         ]);
     }
 
-    #[Route('/{codL}/excluir', name: 'excluir', methods: ['POST'])]
+    #[Route('/{id}/excluir', name: 'excluir', methods: ['POST'])]
     public function excluir(#[MapEntity(id: 'codL')] Livro $livro, Request $request, EntityManagerInterface $entityManager): Response {
         $token = $request->request->get('_token');
 
