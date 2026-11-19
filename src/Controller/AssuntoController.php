@@ -40,13 +40,13 @@ final class AssuntoController extends AbstractController
 
         return $this->render('assunto/form.html.twig', [
             'form' => $form,
-            'titulo' => 'Cadastrar assunto',
+            'titulo' => 'Cadastrar Assunto',
         ]);
     }
 
     #[Route('/{id}/editar', name: 'editar', methods: ['GET', 'POST'])]
-    public function editar(Assunto $assunto, Request $request, EntityManagerInterface $entityManager): Response {
-
+    public function editar(Assunto $assunto, Request $request, EntityManagerInterface $entityManager): Response
+    {
         $form = $this->createForm(AssuntoType::class, $assunto);
         $form->handleRequest($request);
 
@@ -60,7 +60,7 @@ final class AssuntoController extends AbstractController
 
         return $this->render('assunto/form.html.twig', [
             'form' => $form,
-            'titulo' => 'Editar assunto',
+            'titulo' => 'Editar Assunto',
         ]);
     }
 

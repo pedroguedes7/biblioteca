@@ -1,0 +1,109 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Livros | Biblioteca{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Livros</h1>
+
+        <a href="{{ path('app_livro_novo') }}" class="btn btn-primary">
+            Novo livro
+        </a>
+    </div>
+
+    {% for mensagem in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ mensagem }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% for mensagem in app.flashes('danger') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ mensagem }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% if livros is empty %}
+        <div class="alert alert-info">
+            Nenhum livro cadastrado.
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Título</th>
+                        <th>Editora</th>
+                        <th>Edição</th>
+                        <th>Ano</th>
+                        <th>Valor</th>
+                        <th>Autores</th>
+                        <th>Assuntos</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for livro in livros %}
+                        <tr>
+                            <td>{{ livro.codL }}</td>
+                            <td>{{ livro.titulo }}</td>
+                            <td>{{ livro.editora }}</td>
+                            <td>{{ livro.edicao }}</td>
+                            <td>{{ livro.anoPublicacao }}</td>
+                            <td>{{ 'R$ ' ~ (livro.valor|number_format(2, ',', '.')) }}</td>
+
+                            <td>
+                                {% for autor in livro.autores %}
+                                    {{ autor.nome }}{% if not loop.last %}, {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endfor %}
+                            </td>
+
+                            <td>
+                                {% for assunto in livro.assuntos %}
+                                    {{ assunto.descricao }}{% if not loop.last %}, {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endfor %}
+                            </td>
+
+                            <td class="text-center text-nowrap">
+                                <a
+                                    href="{{ path('app_livro_editar', {id: livro.codL}) }}"
+                                    class="btn btn-sm btn-warning"
+                                >
+                                    Editar
+                                </a>
+
+                                <form
+                                    method="post"
+                                    action="{{ path('app_livro_excluir', {id: livro.codL}) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Deseja realmente excluir este livro?');"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="_token"
+                                        value="{{ csrf_token('delete' ~ livro.codL) }}"
+                                    >
+
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

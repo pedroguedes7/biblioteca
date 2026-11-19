@@ -19,7 +19,9 @@
         "symfony/security-csrf": "7.4.*",
         "symfony/twig-bundle": "7.4.*",
         "symfony/validator": "7.4.*",
-        "symfony/yaml": "7.4.*"
+        "symfony/yaml": "7.4.*",
+        "twig/extra-bundle": "^3.29",
+        "twig/intl-extra": "^3.30"
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.68"
