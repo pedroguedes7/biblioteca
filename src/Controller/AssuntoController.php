@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Entity\Assunto;
 use App\Form\AssuntoType;
 use App\Repository\AssuntoRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -65,25 +67,46 @@ final class AssuntoController extends AbstractController
     }
 
     #[Route('/{id}/excluir', name: 'excluir', methods: ['POST'])]
-    public function excluir(Assunto $assunto, Request $request, EntityManagerInterface $entityManager): Response {
+    public function excluir(Assunto $assunto, Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response {
+        $token = $request->request->get('_token');
 
-        if (!$this->isCsrfTokenValid('delete' . $assunto->getCodAs(),$request->request->get('_token'))){
-            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        if (!$this->isCsrfTokenValid(
+            'delete' . $assunto->getCodAs(),
+            $token
+        )) {
+            $this->addFlash('danger', 'Token de segurança inválido.');
+
+            return $this->redirectToRoute('app_assunto_index');
         }
 
         if (!$assunto->getLivros()->isEmpty()) {
             $this->addFlash(
                 'warning',
-                'Não é possível excluir este assunto porque existem livros associados a ele.'
+                'Não é possível excluir um assunto que possui livros associados.'
             );
 
             return $this->redirectToRoute('app_assunto_index');
         }
 
-        $entityManager->remove($assunto);
-        $entityManager->flush();
+        try {
+            $entityManager->remove($assunto);
+            $entityManager->flush();
 
-        $this->addFlash('success', 'Assunto excluído com sucesso.');
+            $this->addFlash('success', 'Assunto excluído com sucesso!');
+        } catch (ForeignKeyConstraintViolationException $exception) {
+            $logger->warning(
+                'Não foi possível excluir o assunto devido a uma restrição de chave estrangeira.',
+                [
+                    'assunto_id' => $assunto->getCodAs(),
+                    'exception' => $exception,
+                ]
+            );
+
+            $this->addFlash(
+                'danger',
+                'Não foi possível excluir o assunto porque existem registros vinculados.'
+            );
+        }
 
         return $this->redirectToRoute('app_assunto_index');
     }

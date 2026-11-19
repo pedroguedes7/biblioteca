@@ -6,6 +6,8 @@ use App\Entity\Autor;
 use App\Form\AutorType;
 use App\Repository\AutorRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -65,23 +67,42 @@ final class AutorController extends AbstractController
     }
 
     #[Route('/{id}/excluir', name: 'excluir', methods: ['POST'])]
-    public function excluir(Request $request, EntityManagerInterface $entityManager, Autor $autor): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $autor->getCodAu(), $request->request->get('_token'))) {
+    public function excluir (Autor $autor, Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response {
+        $token = $request->request->get('_token');
 
-            if (!$autor->getLivros()->isEmpty()) {
-                $this->addFlash(
-                    'warning',
-                    'Não é possível excluir este autor porque existem livros associados a ele.'
-                );
+        if (!$this->isCsrfTokenValid('delete' . $autor->getCodAu(), $token)) {
+            $this->addFlash('danger', 'Token de segurança inválido.');
 
-                return $this->redirectToRoute('app_autor_index');
-            }
+            return $this->redirectToRoute('app_autor_index');
+        }
 
+        if (!$autor->getLivros()->isEmpty()) {
+            $this->addFlash(
+                'warning',
+                'Não é possível excluir um autor que possui livros associados.'
+            );
+
+            return $this->redirectToRoute('app_autor_index');
+        }
+
+        try {
             $entityManager->remove($autor);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Autor excluído com sucesso.');
+            $this->addFlash('success', 'Autor excluído com sucesso!');
+        } catch (ForeignKeyConstraintViolationException $exception) {
+            $logger->warning(
+                'Não foi possível excluir o autor devido a uma restrição de chave estrangeira.',
+                [
+                    'autor_id' => $autor->getCodAu(),
+                    'exception' => $exception,
+                ]
+            );
+
+            $this->addFlash(
+                'danger',
+                'Não foi possível excluir o autor porque existem registros vinculados.'
+            );
         }
 
         return $this->redirectToRoute('app_autor_index');
