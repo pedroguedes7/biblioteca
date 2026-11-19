@@ -67,18 +67,23 @@ class LivroController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/excluir', name: 'excluir', methods: ['POST'])]
-    public function excluir(#[MapEntity(id: 'id')] Livro $livro, Request $request, EntityManagerInterface $entityManager): Response {
+    #[Route('/{codL}/excluir', name: 'excluir', methods: ['POST'])]
+    public function excluir(#[MapEntity(id: 'codL')] Livro $livro, Request $request, EntityManagerInterface $entityManager): Response {
         $token = $request->request->get('_token');
 
-        if ($this->isCsrfTokenValid('delete' . $livro->getCodL(), $token)) {
-            $entityManager->remove($livro);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Livro excluído com sucesso!');
-        } else {
+        if (!$this->isCsrfTokenValid(
+            'delete' . $livro->getCodL(),
+            $token
+        )) {
             $this->addFlash('danger', 'Token de segurança inválido.');
+
+            return $this->redirectToRoute('app_livro_index');
         }
+
+        $entityManager->remove($livro);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Livro excluído com sucesso!');
 
         return $this->redirectToRoute('app_livro_index');
     }

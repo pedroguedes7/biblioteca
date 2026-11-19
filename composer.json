@@ -24,7 +24,9 @@
         "twig/intl-extra": "^3.30"
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.68"
+        "phpunit/phpunit": "^13.4",
+        "symfony/maker-bundle": "^1.68",
+        "symfony/phpunit-bridge": "^8.1"
     },
     "config": {
         "allow-plugins": {
