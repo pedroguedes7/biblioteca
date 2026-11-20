@@ -89,4 +89,3 @@ Para remover também os dados persistidos do PostgreSQL:
 docker compose down -v
 ```
 
-**Atenção:** o segundo comando apaga permanentemente os dados armazenados no volume do banco.

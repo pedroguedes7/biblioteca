@@ -6,9 +6,8 @@ use Doctrine\DBAL\Connection;
 
 class RelatorioRepository
 {
-    public function __construct(
-        private readonly Connection $connection
-    ) {
+    public function __construct(private readonly Connection $connection)
+    {
     }
 
     public function buscarLivrosPorAutor(): array
