@@ -68,7 +68,7 @@ class LivroController extends AbstractController
     }
 
     #[Route('/{id}/excluir', name: 'excluir', methods: ['POST'])]
-    public function excluir(#[MapEntity(id: 'codL')] Livro $livro, Request $request, EntityManagerInterface $entityManager): Response {
+    public function excluir(#[MapEntity(id: 'id')] Livro $livro, Request $request, EntityManagerInterface $entityManager): Response {
         $token = $request->request->get('_token');
 
         if (!$this->isCsrfTokenValid(
